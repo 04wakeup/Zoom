@@ -118,8 +118,26 @@ socket.on("answer", (answer) => {
 });
 welcomeForm.addEventListener("submit", handleWelcomeSubmit);
 
+socket.on("ice", (ice) => {
+  console.log("received candidate");
+  myPeerConnections.addIceCandidate(ice);
+});
 //RTC
 function makeConnection() {
   myPeerConnections = new RTCPeerConnection();
+  myPeerConnections.addEventListener("icecandidate", handleIce);
+  myPeerConnections.addEventListener("addstream", handleAddStream);
   myStream.getTracks().forEach((track) => myPeerConnections.addTrack(track, myStream));
+}
+
+function handleIce(data) {
+  console.log("sent candidate");
+  socket.emit("ice", data.candidate, roomName);
+}
+
+function handleAddStream(data) {
+  console.log("got event from my Peer");
+  console.log(data);
+  const peersFace = document.getElementById("peersFace");
+  peersFace.srcObject = data.stream;
 }
